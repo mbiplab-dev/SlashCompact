@@ -93,10 +93,16 @@ def test_luminance_uses_rec601_weights():
 
 def test_metrics_module_is_torch_free():
     """Load-bearing: this module must test in .venv without .venv-da3."""
+    # Other tests may legitimately import the production RDAH adapter.  Check
+    # the import boundary in a fresh interpreter instead of depending on test
+    # collection order.
+    import subprocess
     import sys
 
-    import viewer.metrics  # noqa: F401
-
-    assert "torch" not in sys.modules
+    result = subprocess.run(
+        [sys.executable, "-c", "import sys; import viewer.metrics; assert 'torch' not in sys.modules"],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 0, result.stderr
     assert "cv2" not in sys.modules
     assert "depth_anything_3" not in sys.modules

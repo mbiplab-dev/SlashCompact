@@ -15,3 +15,6 @@ viewer/web/data-demdirect/
 viewer/cache/
 viewer/web/data-uploads/
 .coverage
+models/*.pth
+altimap-jobs/
+viewer/web/production/reference-data/

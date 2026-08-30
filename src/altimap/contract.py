@@ -17,7 +17,9 @@ import rasterio
 from rasterio.crs import CRS
 from rasterio.transform import Affine
 
-VALID_DATUMS = ("ellipsoidal", "relative")
+# "unknown" is intentional: an unverified DEM vertical reference must never be
+# silently advertised as ellipsoidal height.
+VALID_DATUMS = ("ellipsoidal", "orthometric", "relative", "unknown")
 
 
 @dataclasses.dataclass(frozen=True)
@@ -86,7 +88,7 @@ def write_elevation_cog(
     with rasterio.open(
         path,
         "w",
-        driver="GTiff",
+        driver="COG",
         height=data.shape[0],
         width=data.shape[1],
         count=1,
@@ -94,11 +96,10 @@ def write_elevation_cog(
         crs=crs,
         transform=transform,
         nodata=np.nan,
-        tiled=True,
-        blockxsize=256,
-        blockysize=256,
+        blocksize=256,
         compress="deflate",
         predictor=3,
+        overview_resampling="average",
     ) as dst:
         dst.write(data, 1)
 

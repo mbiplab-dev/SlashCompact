@@ -3,6 +3,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+import rasterio
 from rasterio.crs import CRS
 from rasterio.transform import from_origin
 
@@ -61,6 +62,9 @@ def test_elevation_cog_roundtrip_preserves_georeferencing(tmp_path: Path) -> Non
     assert out_transform == transform
     assert out_crs == crs
     assert (tmp_path / "dsm.json").exists()
+    with rasterio.open(path) as src:
+        assert src.driver == "GTiff"  # COG is serialized as TIFF with COG layout.
+        assert src.tags(ns="IMAGE_STRUCTURE").get("LAYOUT") == "COG"
 
 
 def test_nodata_becomes_nan(tmp_path: Path) -> None:
